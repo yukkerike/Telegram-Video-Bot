@@ -1,94 +1,108 @@
-<h1 align="center">📱 Telegram Video Message Bot</h1>
+# Telegram Video Message Bot
 
-### ⭐About the Project
-This project is a Telegram bot designed to convert regular videos into round video messages (video notes). Perfect for creating engaging circular video messages that stand out in Telegram chats. Simply send a video, and the bot will handle the conversion automatically.
+<div align="center">
 
----
-<h3 align="center">
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/downloads/)
+[![aiogram](https://img.shields.io/badge/aiogram-3.x-blue)](https://docs.aiogram.dev/)
+[![Stars](https://img.shields.io/github/stars/bohd4nx/Telegram-Video-Bot)](https://github.com/bohd4nx/Telegram-Video-Bot/)
 
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org)
-[![GitHub license](https://img.shields.io/github/license/bohd4nx/Telegram-Video-Bot.svg)](https://github.com/bohd4nx/Telegram-Video-Bot/blob/main/LICENSE)
-[![GitHub commits](https://badgen.net/github/commits/bohd4nx/Telegram-Video-Bot)](https://github.com/bohd4nx/Telegram-Video-Bot/)
-[![GitHub stars](https://badgen.net/github/stars/bohd4nx/Telegram-Video-Bot)](https://github.com/bohd4nx/Telegram-Video-Bot/)
+</div>
 
-</h3>
+Convert regular videos into round video messages (video notes) that stand out in Telegram chats.
 
-### 🚀 Features
-- 🎥 Convert any video to round video message
-- ⚡ Fast processing with optimized settings
-- 📐 Automatic resizing and cropping
-- 🔄 Easy-to-use interface
-- 📊 Admin statistics dashboard
-- 🔍 Error tracking system
+## ✨ Features
 
+- 🎥 **Video to Video Note** - Convert any video to round video message format
+- ⚡ **Fast Processing** - Optimized conversion with automatic resizing
+- 📐 **Smart Cropping** - Automatic centering and aspect ratio handling
+- 🔄 **User-Friendly** - Simple interface with inline keyboards
+- 🛡️ **Error Handling** - Comprehensive error management and user feedback
 
-### 👨‍💻Installation:
-1. **Clone the repository:**
+## 🚀 Quick Start
+
+1. **Clone and install**
    ```bash
    git clone https://github.com/bohd4nx/Telegram-Video-Bot.git
    cd Telegram-Video-Bot
+   pip install -r requirements.txt
    ```
 
-2. **Install FFmpeg:**
+2. **Install FFmpeg**
    ```bash
-   # Windows (using chocolatey)
+   # Windows (chocolatey)
    choco install ffmpeg
-
+   
    # Ubuntu/Debian
    sudo apt-get install ffmpeg
-
+   
    # macOS
    brew install ffmpeg
    ```
 
-3. **Install the required dependencies:**
-   ```bash
-   pip install -r requirements.txt
+3. **Configure** - Fill `config.ini`:
+   ```ini
+   [Bot]
+   BOT_TOKEN = your_bot_token_from_botfather
    ```
 
-4. **Set Up Configuration:**
-   - Edit `data/cfg.py`
-   - Add your bot token from [@BotFather](https://t.me/BotFather)
-   - Set admin ID (optional)
-
-5. **Run the Bot:**
+4. **Run**
    ```bash
    python main.py
    ```
 
-### 📱 How to Use
-1. Start bot with `/start`
-2. Send any video file
-3. Wait for processing
-4. Receive round video message
-5. Forward to any chat
+### How to Use
+
+| Action              | Description                           |
+|---------------------|---------------------------------------|
+| **Send Video**      | Upload any video file to convert      |
+| **Get Video Note**  | Receive processed round video message |
+| **Forward & Share** | Forward the video note to any chat    |
+
+#### 📹 Video Processing
+
+1. Start the bot with `/start`
+2. Send any video file (MP4 recommended)
+3. Wait for processing (15-30 seconds) - will be optimized later
+4. Receive your round video message
+5. Forward to any chat with "Hide sender's name" option
 
 ### 📝 Video Requirements
-- Format: MP4 (recommended)
-- Duration: Up to 60 seconds
-- Size: Max 20MB
-- Quality: 480p recommended
-- Aspect: Square videos work best
 
+- **Format**: MP4 (recommended), other formats supported
+- **Duration**: Maximum 60 seconds
+- **Size**: Up to 20MB
+- **Quality**: 480p recommended for faster processing
+- **Aspect Ratio**: Square videos work best
 
-### ❗Contributions Welcome!
+### Output Specifications
 
-We welcome all forks, suggestions, and improvements to this project. Your contributions help make this project better for everyone. Whether it's fixing a bug, adding a feature, or improving documentation, we appreciate your help in making this project the best it can be.
+- **Resolution**: 360x360 pixels (optimized for Telegram)
+- **Format**: Round video note compatible with all Telegram clients
+- **Audio**: Preserved from original video
+- **Codec**: H.264 with AAC audio
 
-### 📝 License
-This project is MIT licensed. See LICENSE for more information.
+## ⚙️ Technical Details
 
-### 🌟 Support
-If you find this project useful:
+- **Async Processing**: Fully asynchronous video processing
+- **MoviePy Integration**: Professional video editing capabilities
+- **Temporary Files**: Secure handling with automatic cleanup
+- **Error Recovery**: Handles file size limits and permission errors
+- **Memory Efficient**: Optimized for server deployment
 
-- Give it a star ⭐
-- Share with others 🔄
-- Consider contributing 🛠️
+### Error Handling
+
+- **File Too Large**: Automatic detection of 20MB+ files
+- **Voice Messages Disabled**: Guides users to enable voice messages
+- **Processing Errors**: Detailed error reporting and recovery
 
 ---
 
 <div align="center">
-    <h4>Built with ❤️ by <a href="https://t.me/bohd4nx" target="_blank">Bohdan</a></h4>
+
+#### Made with ❤️ by [@bohd4nx](https://t.me/bohd4nx)
+
+**Star ⭐ this repo if you found it useful!**
+
 </div>
 
 

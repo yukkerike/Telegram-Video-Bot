@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+./.venv
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Session files
+*.session*.
+*.session-*
+
+# Logs
+logs/
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
