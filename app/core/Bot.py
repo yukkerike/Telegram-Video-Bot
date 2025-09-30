@@ -5,13 +5,12 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
+
 from app.core.config import config
 from app.handlers.commands import (
     handle_unknown_input,
-    start_message,
-    help_handler,
-    help_callback,
-    back_callback
+    start_command,
+    help_command
 )
 from app.utils.video_processor import process_video
 
@@ -44,10 +43,7 @@ class TelegramBot:
         await self.bot.set_my_commands(commands)
 
     def _register_handlers(self) -> None:
-        self.dp.message.register(start_message, Command("start"))
-        self.dp.message.register(help_handler, Command("help"))
+        self.dp.message.register(start_command, Command("start"))
+        self.dp.message.register(help_command, Command("help"))
         self.dp.message.register(process_video, F.video)
         self.dp.message.register(handle_unknown_input, ~F.video & ~Command("start") & ~Command("help"))
-
-        self.dp.callback_query.register(help_callback, F.data == "help")
-        self.dp.callback_query.register(back_callback, F.data == "back")

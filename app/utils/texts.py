@@ -2,7 +2,7 @@ Messages = {
     "help": """
 📝 <b>Video Requirements:</b>
 
-• <b>Format:</b> Square (recommended)
+• <b>Format:</b> Square (optimal), otherwise will be cropped
 • <b>Quality:</b> 480p (optimal for faster processing)
 • <b>Duration:</b> Maximum 60 seconds
 • <b>Size:</b> Up to 20 MB
@@ -26,6 +26,10 @@ Messages = {
 
 🎥 I'll convert your videos into round message format.
 Simply send any video to get started.
+
+📌 <b>Note:</b> Ensure your voice messages are enabled to receive video notes.
+
+ℹ️ Use /help for detailed instructions.
 """,
 
     "unknown_input": """
@@ -34,7 +38,7 @@ Simply send any video to get started.
 /help - View instructions
 """,
 
-    "processing": "⏳ Processing...",
+    "processing": "⏳ <b>Video is being processed</b> (usually takes <code>≤15s</code> if all rules are followed)...",
 
     "file_too_large": "⚠️ File too large (max 20MB)",
 

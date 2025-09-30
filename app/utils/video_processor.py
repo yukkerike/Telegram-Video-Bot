@@ -1,95 +1,79 @@
-import logging
+import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import moviepy.config as mp_config
+import cv2
+import numpy as np
 from aiogram.exceptions import TelegramEntityTooLarge, TelegramForbiddenError
-from aiogram.types import Message, FSInputFile
+from aiogram.types import FSInputFile
+
 from app.utils.texts import Messages
-from moviepy import VideoFileClip
 
-mp_config.LOGGER = logging.getLogger('moviepy')
-mp_config.LOGGER.setLevel(logging.ERROR)
+# TODO: Optimize video processing pipeline for a large number of concurrent users
+# TODO: Speed up processing as much as possible (consider resizing, batching, async ffmpeg, GPU acceleration)
+# TODO: Reduce memory footprint during frame processing
+# TODO: Ensure FFmpeg and OpenCV calls are non-blocking wherever possible
 
-logger = logging.getLogger(__name__)
-
-
-# TODO: Add a background when downloading a video (like in the original video message in Telegram), speed up processing
-# One video processing takes about 15-30 seconds (i'll try to optimize it later)
-
-async def process_video(message: Message):
+async def process_video(message):
     user_id = message.from_user.id
-    current_time = datetime.now().strftime("%H-%M-%S-%f")
-
-    processing_message = None
+    time_str = datetime.now().strftime("%H-%M-%S-%f")
+    proc_msg = await message.reply(Messages["processing"])
     try:
-        file_id = message.video.file_id
-        file = await message.bot.get_file(file_id)
+        f = await message.bot.get_file(message.video.file_id)
+        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as in_f, \
+                tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_f, \
+                tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as out_f:
+            in_path, tmp_path, out_path = Path(in_f.name), Path(tmp_f.name), Path(out_f.name)
+        await message.bot.download_file(f.file_path, in_path)
 
-        processing_message = await message.reply(Messages["processing"])
+        cap = cv2.VideoCapture(str(in_path))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        w, h = int(cap.get(3)), int(cap.get(4))
 
-        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as input_tmp, \
-                tempfile.NamedTemporaryFile(suffix='_output.mp4', delete=False) as output_tmp:
+        scale = min(720 / max(w, h), 1.0)
+        w_scaled, h_scaled = int(w * scale), int(h * scale)
+        size = min(w_scaled, h_scaled, 640) - (min(w_scaled, h_scaled, 640) % 2)
 
-            input_file = Path(input_tmp.name)
-            output_file = Path(output_tmp.name)
+        out = cv2.VideoWriter(str(tmp_path), cv2.VideoWriter.fourcc(*'mp4v'), fps, (size, size))
+        mask = np.zeros((size, size), np.uint8)
+        cv2.circle(mask, (size // 2, size // 2), size // 2, 255, -1)
 
-        await message.bot.download_file(file.file_path, input_file)
+        while True:
+            ret, frame = cap.read()
+            if not ret: break
+            frame = cv2.resize(frame, (w_scaled, h_scaled))
+            crop = frame[(h_scaled - size) // 2:(h_scaled + size) // 2, (w_scaled - size) // 2:(w_scaled + size) // 2]
+            out.write(np.where(mask[:, :, None] == 255, crop, 255))
+        cap.release()
+        out.release()
 
-        with VideoFileClip(str(input_file), audio=True) as input_video:
-            circle_size = 360
-            aspect_ratio = input_video.w / input_video.h
+        subprocess.run([
+            "ffmpeg", "-y", "-i", str(tmp_path), "-i", str(in_path),
+            "-c:v", "libx264", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0",
+            "-preset", "fast", "-crf", "23", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+            "-loglevel", "error", str(out_path)
+        ], check=True)
 
-            dimensions = {
-                'landscape': {'width': int(circle_size * aspect_ratio), 'height': circle_size},
-                'portrait': {'width': circle_size, 'height': int(circle_size / aspect_ratio)}
-            }
-
-            new_dimensions = dimensions['landscape' if input_video.w > input_video.h else 'portrait']
-
-            resized_video = input_video.resized((new_dimensions['width'], new_dimensions['height']))
-            output_video = resized_video.cropped(
-                x_center=resized_video.w / 2,
-                y_center=resized_video.h / 2,
-                width=circle_size,
-                height=circle_size
-            )
-
-            output_video.write_videofile(
-                str(output_file),
-                codec="libx264",
-                audio_codec="aac",
-                bitrate="5M",
-                logger=None
-            )
-        video_note = FSInputFile(output_file, filename=f"{user_id}_{current_time}_output_video.mp4")
-
+        duration = int(total_frames / fps) if fps > 0 else None
         await message.bot.send_video_note(
             chat_id=message.chat.id,
-            video_note=video_note,
-            duration=int(output_video.duration),
-            length=circle_size
+            video_note=FSInputFile(out_path, filename=f"{user_id}_{time_str}_circle_video.mp4"),
+            duration=duration,
+            length=size
         )
-
-        await processing_message.delete()
+        await proc_msg.delete()
 
     except TelegramEntityTooLarge:
-        logger.error(f"File too large for user {user_id}")
-        await processing_message.edit_text(Messages["file_too_large"])
+        await proc_msg.edit_text(Messages["file_too_large"])
     except TelegramForbiddenError as e:
         if "VOICE_MESSAGES_FORBIDDEN" in str(e):
-            logger.warning(f"Voice messages disabled for user {user_id}")
-            await processing_message.edit_text(Messages["voice_messages_disabled"])
+            await proc_msg.edit_text(Messages["voice_messages_disabled"])
         else:
-            logger.error(f"Forbidden error for user {user_id}: {str(e)}")
-            await processing_message.edit_text(Messages["processing_error"].format(error=str(e)))
+            await proc_msg.edit_text(Messages["processing_error"].format(error=str(e)))
     except Exception as e:
-        logger.error(f"Video processing error for user {user_id}: {str(e)}")
-        await processing_message.edit_text(Messages["processing_error"].format(error=str(e)))
+        await proc_msg.edit_text(Messages["processing_error"].format(error=str(e)))
     finally:
-        for file in [input_file, output_file]:
-            try:
-                file.exists() and file.unlink()
-            except:
-                pass
+        for f in [in_path, tmp_path, out_path]:
+            if f.exists(): f.unlink()

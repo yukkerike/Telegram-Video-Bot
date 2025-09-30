@@ -13,13 +13,9 @@ venv/
 .idea/
 .vscode/
 
-# Session files
-*.session*.
-*.session-*
-
-# Logs
-logs/
-*.log
+# Environment variables
+.env
+# .env.*
 
 # System files
 .DS_Store

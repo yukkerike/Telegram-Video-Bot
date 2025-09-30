@@ -1,109 +1,152 @@
-# Telegram Video Message Bot
+# 🎥 Telegram Video Circle Bot
 
 <div align="center">
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/downloads/)
-[![aiogram](https://img.shields.io/badge/aiogram-3.x-blue)](https://docs.aiogram.dev/)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/downloads/)
+[![aiogram](https://img.shields.io/badge/aiogram-3.2+-green)](https://docs.aiogram.dev/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.12+-red)](https://opencv.org/)
 [![Stars](https://img.shields.io/github/stars/bohd4nx/Telegram-Video-Bot)](https://github.com/bohd4nx/Telegram-Video-Bot/)
+
+*Transforms regular videos into circular video notes (**as in telegram**)*
+
+[Report Bug](https://github.com/bohd4nx/Telegram-Video-Bot/issues) · [Request Feature](https://github.com/bohd4nx/Telegram-Video-Bot/issues)
 
 </div>
 
-Convert regular videos into round video messages (video notes) that stand out in Telegram chats.
-
 ## ✨ Features
 
-- 🎥 **Video to Video Note** - Convert any video to round video message format
-- ⚡ **Fast Processing** - Optimized conversion with automatic resizing
-- 📐 **Smart Cropping** - Automatic centering and aspect ratio handling
-- 🔄 **User-Friendly** - Simple interface with inline keyboards
-- 🛡️ **Error Handling** - Comprehensive error management and user feedback
+- 🎯 **Circle Videos** - Creates perfect circular videos with white background
+- ⚡ **Fast Processing** - Uses OpenCV for maximum speed
+- 🎵 **Audio Preservation** - FFmpeg keeps original audio intact
+- 📐 **Smart Cropping** - Automatic centering and scaling
+- 🔧 **Simple Usage** - Only /start and /help commands
+- 🛡️ **Reliability** - Complete error handling and file cleanup
 
 ## 🚀 Quick Start
 
-1. **Clone and install**
-   ```bash
-   git clone https://github.com/bohd4nx/Telegram-Video-Bot.git
-   cd Telegram-Video-Bot
-   pip install -r requirements.txt
-   ```
+### 1. Installation
 
-2. **Install FFmpeg**
-   ```bash
-   # Windows (chocolatey)
-   choco install ffmpeg
-   
-   # Ubuntu/Debian
-   sudo apt-get install ffmpeg
-   
-   # macOS
-   brew install ffmpeg
-   ```
+```bash
+git clone https://github.com/bohd4nx/Telegram-Video-Bot.git
+cd Telegram-Video-Bot
+pip install -r requirements.txt
+```
 
-3. **Configure** - Fill `config.ini`:
-   ```ini
-   [Bot]
-   BOT_TOKEN = your_bot_token_from_botfather
-   ```
+### 2. Install FFmpeg
 
-4. **Run**
-   ```bash
-   python main.py
-   ```
+```bash
+# macOS (Homebrew)
+brew install ffmpeg
 
-### How to Use
+# Ubuntu/Debian
+sudo apt update && sudo apt install ffmpeg
 
-| Action              | Description                           |
-|---------------------|---------------------------------------|
-| **Send Video**      | Upload any video file to convert      |
-| **Get Video Note**  | Receive processed round video message |
-| **Forward & Share** | Forward the video note to any chat    |
+# Windows (Chocolatey)
+choco install ffmpeg
 
-#### 📹 Video Processing
+# Windows (Scoop)
+scoop install ffmpeg
+```
 
-1. Start the bot with `/start`
-2. Send any video file (MP4 recommended)
-3. Wait for processing (15-30 seconds) - will be optimized later
-4. Receive your round video message
-5. Forward to any chat with "Hide sender's name" option
+### 3. Configuration
 
-### 📝 Video Requirements
+Create `.env` file in project root:
 
-- **Format**: MP4 (recommended), other formats supported
-- **Duration**: Maximum 60 seconds
+```env
+# Get token from @BotFather
+BOT_TOKEN=your_bot_token_here
+```
+
+### 4. Run
+
+```bash
+python main.py
+```
+
+## 📱 Usage
+
+### Bot Commands
+
+- `/start` - Welcome message and instructions
+- `/help` - Detailed usage guide
+
+### Video Processing Flow
+
+1. Send video to bot
+2. Wait for processing (⏳ Processing...)
+3. Receive circular video with white background (like original Telegram format)
+4. Forward as regular video note
+
+## 📋 Video Requirements
+
+### Input Parameters
+
+- **Format**: MP4, AVI, MOV and others
 - **Size**: Up to 20MB
-- **Quality**: 480p recommended for faster processing
-- **Aspect Ratio**: Square videos work best
+- **Duration**: Recommended up to 60 seconds
+- **Resolution**: Any (automatically processed)
 
 ### Output Specifications
 
-- **Resolution**: 360x360 pixels (optimized for Telegram)
-- **Format**: Round video note compatible with all Telegram clients
-- **Audio**: Preserved from original video
-- **Codec**: H.264 with AAC audio
+- **Format**: Circular video (video note)
+- **Resolution**: Up to 640×640 (optimized for Telegram)
+- **Codec**: H.264 + AAC
+- **Background**: White outside circle
+- **Audio**: Preserved from original
 
-## ⚙️ Technical Details
+## ⚙️ Technical Implementation
 
-- **Async Processing**: Fully asynchronous video processing
-- **MoviePy Integration**: Professional video editing capabilities
-- **Temporary Files**: Secure handling with automatic cleanup
-- **Error Recovery**: Handles file size limits and permission errors
-- **Memory Efficient**: Optimized for server deployment
+### Processing Algorithm
 
-### Error Handling
+1. **Download** - Get video from user
+2. **Analysis** - Determine dimensions and parameters
+3. **Cropping** - Extract square from frame center
+4. **Mask** - Apply circular mask with white background
+5. **Scaling** - Resize to optimal dimensions
+6. **Audio** - Merge with original audio via FFmpeg
+7. **Upload** - Send as video note to Telegram
 
-- **File Too Large**: Automatic detection of 20MB+ files
-- **Voice Messages Disabled**: Guides users to enable voice messages
-- **Processing Errors**: Detailed error reporting and recovery
+### Optimization
+
+- Maximum resolution 640×640 for Telegram compliance
+- Even dimensions for codec compatibility
+- Fast FFmpeg presets for speed
+- Automatic temporary file cleanup
+
+## 🐛 Error Handling
+
+| Error                   | Cause                     | Solution           |
+|-------------------------|---------------------------|--------------------|
+| File too large          | File > 20MB               | Compress video     |
+| Voice messages disabled | Voice messages turned off | Enable in settings |
+| Processing error        | Processing failure        | Check video format |
+
+## 🛠️ Deployment
+
+### Docker (Optional)
+
+```dockerfile
+FROM python:3.12-slim
+RUN apt-get update && apt-get install -y ffmpeg
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "main.py"]
+```
+
+### Environment Variables
+
+```env
+BOT_TOKEN=your_telegram_bot_token
+```
 
 ---
 
 <div align="center">
 
-#### Made with ❤️ by [@bohd4nx](https://t.me/bohd4nx)
+### Made with ❤️ by [@bohd4nx](https://t.me/bohd4nx)
 
 **Star ⭐ this repo if you found it useful!**
 
 </div>
-
-
-
