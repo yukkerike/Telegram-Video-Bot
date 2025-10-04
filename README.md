@@ -6,9 +6,9 @@
 
 <div align="center">
 
-[![Python](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/downloads/)
-[![aiogram](https://img.shields.io/badge/aiogram-3.2+-green)](https://docs.aiogram.dev/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.12+-red)](https://opencv.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/downloads/)
+[![aiogram](https://img.shields.io/badge/aiogram-3x-green)](https://docs.aiogram.dev/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4x-red)](https://opencv.org/)
 
 [Report Bug](https://github.com/bohd4nx/Telegram-Video-Bot/issues) · [Request Feature](https://github.com/bohd4nx/Telegram-Video-Bot/issues)
 
