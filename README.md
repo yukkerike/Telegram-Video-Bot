@@ -1,13 +1,14 @@
-# 🎥 Telegram Video Circle Bot
+<h1 align="center">🎥 Telegram Video Bot</h1>
+
+<p align="center">
+  <b>A fast and lightweight Telegram bot that transforms videos into round video notes — just like in Telegram itself.</b>
+</p>
 
 <div align="center">
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/downloads/)
 [![aiogram](https://img.shields.io/badge/aiogram-3.2+-green)](https://docs.aiogram.dev/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.12+-red)](https://opencv.org/)
-[![Stars](https://img.shields.io/github/stars/bohd4nx/Telegram-Video-Bot)](https://github.com/bohd4nx/Telegram-Video-Bot/)
-
-*Transforms regular videos into circular video notes (**as in telegram**)*
 
 [Report Bug](https://github.com/bohd4nx/Telegram-Video-Bot/issues) · [Request Feature](https://github.com/bohd4nx/Telegram-Video-Bot/issues)
 
@@ -116,7 +117,7 @@ python main.py
 ## 🐛 Error Handling
 
 | Error                   | Cause                     | Solution           |
-|-------------------------|---------------------------|--------------------|
+| ----------------------- | ------------------------- | ------------------ |
 | File too large          | File > 20MB               | Compress video     |
 | Voice messages disabled | Voice messages turned off | Enable in settings |
 | Processing error        | Processing failure        | Check video format |
