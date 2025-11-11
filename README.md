@@ -8,7 +8,6 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/downloads/)
 [![aiogram](https://img.shields.io/badge/aiogram-3x-green)](https://docs.aiogram.dev/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4x-red)](https://opencv.org/)
 
 [Report Bug](https://github.com/bohd4nx/Telegram-Video-Bot/issues) · [Request Feature](https://github.com/bohd4nx/Telegram-Video-Bot/issues)
 
@@ -17,9 +16,10 @@
 ## ✨ Features
 
 - 🎯 **Circle Videos** - Creates perfect circular videos with white background
-- ⚡ **Fast Processing** - Uses OpenCV for maximum speed
-- 🎵 **Audio Preservation** - FFmpeg keeps original audio intact
+- ⚡ **Fast Processing** - Uses optimized ffmpeg pipeline for maximum speed
+- 🎵 **Audio Encoding** - Encodes audio to AAC 96k for optimal quality and size
 - 📐 **Smart Cropping** - Automatic centering and scaling
+- 🎬 **Video Segmentation** - Automatically splits long videos into 60-second segments
 - 🔧 **Simple Usage** - Only /start and /help commands
 - 🛡️ **Reliability** - Complete error handling and file cleanup
 
