@@ -1,113 +1,68 @@
-import math
+import asyncio
 import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import ffmpeg
+import cv2
+import numpy as np
 from aiogram.exceptions import TelegramEntityTooLarge, TelegramForbiddenError
 from aiogram.types import FSInputFile
 
 from app.utils.texts import Messages
-
-# TODO: Optimize video processing pipeline for a large number of concurrent users
-# TODO: Speed up processing as much as possible (consider resizing, batching, async ffmpeg, GPU acceleration)
-# TODO: Reduce memory footprint during frame processing
-# TODO: Ensure FFmpeg calls are non-blocking wherever possible
 
 
 async def process_video(message):
     user_id = message.from_user.id
     time_str = datetime.now().strftime("%H-%M-%S-%f")
     proc_msg = await message.reply(Messages["processing"])
-
-    in_path = None
-    segment_paths = []
-
     try:
         f = await message.bot.get_file(message.video.file_id)
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as in_f:
-            in_path = Path(in_f.name)
+        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as in_f, \
+                tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp_f, \
+                tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as out_f:
+            in_path, tmp_path, out_path = Path(in_f.name), Path(tmp_f.name), Path(out_f.name)
         await message.bot.download_file(f.file_path, in_path)
 
-        probe_input = ffmpeg.probe(str(in_path))
-        total_duration = float(probe_input["format"]["duration"])
-        num_segments = math.ceil(total_duration / 60)
+        cap = cv2.VideoCapture(str(in_path))
+        fps = cap.get(cv2.CAP_PROP_FPS) or 30
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        w, h = int(cap.get(3)), int(cap.get(4))
 
-        await proc_msg.edit_text(
-            Messages["video_info"].format(
-                duration=int(total_duration), segments=num_segments
-            )
+        scale = min(720 / max(w, h), 1.0)
+        w_scaled, h_scaled = int(w * scale), int(h * scale)
+        size = min(w_scaled, h_scaled, 640) - (min(w_scaled, h_scaled, 640) % 2)
+
+        out = cv2.VideoWriter(str(tmp_path), cv2.VideoWriter.fourcc(*'mp4v'), fps, (size, size))
+        mask = np.zeros((size, size), np.uint8)
+        cv2.circle(mask, (size // 2, size // 2), size // 2, 255, -1)
+
+        ret, frame = cap.read()
+        while ret:
+            frame = cv2.resize(frame, (w_scaled, h_scaled), interpolation=cv2.INTER_AREA)
+            crop = frame[(h_scaled - size) // 2:(h_scaled + size) // 2, (w_scaled - size) // 2:(w_scaled + size) // 2]
+            crop[mask == 0] = 255
+            out.write(crop)
+            ret, frame = cap.read()
+
+        cap.release()
+        out.release()
+
+        cmd = [
+            "ffmpeg", "-y", "-i", str(tmp_path), "-i", str(in_path),
+            "-c:v", "libx264", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0",
+            "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", "-loglevel", "error", str(out_path)
+        ]
+        process = await asyncio.create_subprocess_exec(*cmd)
+        await process.communicate()
+
+        duration = int(total_frames / fps)
+        await message.bot.send_video_note(
+            chat_id=message.chat.id,
+            video_note=FSInputFile(out_path, filename=f"{user_id}_{time_str}_circle_video.mp4"),
+            duration=duration,
+            length=size
         )
-
-        current_time = 0
-        segment_num = 1
-
-        while current_time < total_duration:
-            segment_duration = min(60, total_duration - current_time)
-
-            with tempfile.NamedTemporaryFile(
-                suffix=".mp4", delete=False
-            ) as out_f:
-                output_path = Path(out_f.name)
-
-            stream = ffmpeg.input(
-                str(in_path),
-                ss=current_time,
-                t=segment_duration,
-                hwaccel="auto",
-            )
-
-            (
-                ffmpeg.output(
-                    (
-                        stream.video.filter(
-                            "crop",
-                            "min(in_w,in_h)",
-                            "min(in_w,in_h)",
-                            "(in_w-min(in_w,in_h))/2",
-                            "(in_h-min(in_w,in_h))/2",
-                        )
-                        .filter("scale", 640, -1, flags="lanczos")
-                        .filter("format", "yuva420p")
-                        .filter(
-                            "geq",
-                            r="if(lt(hypot(X-W/2,Y-H/2),W/2),r(X,Y),255)",
-                            g="if(lt(hypot(X-W/2,Y-H/2),W/2),g(X,Y),255)",
-                            b="if(lt(hypot(X-W/2,Y-H/2),W/2),b(X,Y),255)",
-                        )
-                        .filter("format", "yuv420p")
-                    ),
-                    stream.audio,
-                    str(output_path),
-                    vcodec="libx264",
-                    crf=25,
-                    preset="ultrafast",
-                    tune="fastdecode",
-                    fpsmax=60,
-                    acodec="aac",
-                    audio_bitrate="96k",
-                    format="mp4",
-                    movflags="+faststart",
-                    threads="0",
-                )
-                .overwrite_output()
-                .run(capture_stdout=True, capture_stderr=True, quiet=True)
-            )
-
-            probe = ffmpeg.probe(str(output_path))
-            actual_duration = int(float(probe["format"]["duration"]))
-            segment_paths.append((output_path, actual_duration, 640))
-
-            current_time += 60
-            segment_num += 1
-
-        for idx, (seg_path, duration, size) in enumerate(segment_paths, 1):
-            await message.bot.send_video_note(
-                chat_id=message.chat.id,
-                video_note=FSInputFile(seg_path, filename=f"{user_id}_{time_str}_segment_{idx:03d}.mp4"),
-                duration=duration,
-                length=size
-            )
         await proc_msg.delete()
 
     except TelegramEntityTooLarge:
@@ -120,10 +75,9 @@ async def process_video(message):
     except Exception as e:
         await proc_msg.edit_text(Messages["processing_error"].format(error=str(e)))
     finally:
-        if in_path and in_path.exists():
-            in_path.unlink()
-        for seg_path, _, _ in segment_paths:
-            if seg_path.exists():
-                seg_path.unlink()
-        if output_path and output_path.exists():
-            output_path.unlink()
+        for f in [in_path, tmp_path, out_path]:
+            if f.exists():
+                try:
+                    f.unlink()
+                except OSError:
+                    pass

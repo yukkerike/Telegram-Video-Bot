@@ -38,14 +38,10 @@ Simply send any video to get started.
 /help - View instructions
 """,
 
-    "processing": "⏳ <b>Video is being processed</b> (usually takes <code>≤15s</code>)...",
-
-    "video_info": """
-📹 <b>Video Information:</b>
-• Duration: {duration} seconds
-• Segments: {segments}
-
-⏳ Processing...
+    "processing": """
+    ⏳ <b>Video is being processed</b>
+    
+    ℹ️ Usually takes <code>≤ 15s</code> if all rules are followed...
 """,
 
     "file_too_large": "⚠️ File too large (max 20MB)",
