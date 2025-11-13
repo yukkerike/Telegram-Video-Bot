@@ -43,6 +43,13 @@ Simply send any video to get started.
     
     ℹ️ Usually takes <code>≤ 15s</code> if all rules are followed...
 """,
+    "video_info": """
+📹 <b>Video Information:</b>
+• Duration: {duration} seconds
+• Segments: {segments}
+
+⏳ Processing...
+""",
 
     "file_too_large": "⚠️ File too large (max 20MB)",
 

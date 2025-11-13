@@ -10,11 +10,13 @@ _Transforms regular videos into circular video notes (**as in telegram**)_
 
 ## ✨ Features
 
-- 🎯 **Circle Videos** - Creates perfect circular videos with white background
-- ⚡ **Fast Processing** - Uses OpenCV for maximum speed
-- 🎵 **Audio Preservation** - FFmpeg keeps original audio intact
+- 🎯 **Circle Videos** - Creates perfect circular videos with the same overlay as in Telegram for Android
+- ⚡ **Fast Processing** - Uses optimized ffmpeg pipeline for maximum speed
+- 🎵 **Audio Encoding** - Encodes audio to AAC 96k for optimal quality and size
 - 📐 **Smart Cropping** - Automatic centering and scaling
+- 🎬 **Video Segmentation** - Automatically splits long videos into 60-second segments
 - 🔧 **Simple Usage** - Only /start and /help commands
+- 🛡️ **Reliability** - Complete error handling and file cleanup
 
 ## 🚀 Quick Start
 
